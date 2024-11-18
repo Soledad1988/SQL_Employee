@@ -105,13 +105,72 @@ IGNORE 1 LINES
 (id_gender, gender);
 
 -- Consultas
-USE employee;
-
-SELECT * FROM fact_employee 
-WHERE employee_satisfaction = 5;
-
-SELECT MAX(annual_salary) 
-AS highest_salary, 
-MIN(annual_salary) AS lowest_salary 
+-- 1 Mayor y Menor salario
+SELECT MAX(annual_salary) AS Mayor_salario, 
+MIN(annual_salary) AS Menor_salario 
 FROM fact_employee;
 
+-- 2 Cantidad de Total de empleados
+SELECT COUNT(employee_id) AS Cantidad_Transacciones 
+FROM fact_employee;
+
+-- 3 Cantidad de empleados Activos
+SELECT dim_status.sstatus AS Estado, COUNT(dim_employee.employee_id) AS Cantidad_empleados
+FROM dim_employee
+JOIN dim_status
+ON dim_employee.id_status = dim_status.id_status
+GROUP BY dim_status.sstatus;
+
+-- 4 Cantidad de empleados Inactivos (no da el resultado)
+SELECT dim_status.sstatus AS Estado, COUNT(dim_employee.employee_id) AS Cantidad_empleados
+FROM dim_employee
+JOIN dim_status
+ON dim_employee.id_status = dim_status.id_status
+WHERE TRIM(dim_status.sstatus) != 'Active'
+GROUP BY dim_status.sstatus;
+
+-- 5 Promedio de sueldo por género
+SELECT dim_gender.gender AS Genero, AVG(fact_employee.annual_salary) AS Promedio_sueldo
+FROM fact_employee
+JOIN dim_employee
+ON fact_employee.employee_id = dim_employee.employee_id
+JOIN dim_gender
+ON dim_employee.id_gender = dim_gender.id_gender
+GROUP BY dim_gender.gender;
+
+-- 6 Cantidad empleados por ciudad
+select COUNT(employee_id) as Cantidad_empelados
+from dim_employee
+join dim_branch
+on dim_employee.id_branch = dim_branch.id_branch
+group by dim_branch.branch;
+
+-- 7 Nombre de Empleados con mayor performance
+SELECT dim_employee.name AS Nombre_empleados, dim_performance.performance AS Rendimiento
+FROM dim_employee
+JOIN dim_performance
+on dim_employee.id_performance = dim_performance.id_performance
+WHERE dim_performance.performance = 'Fully Meets';
+
+-- 8 Nombre de Empleados con satisfaccion mayor a 3
+SELECT dim_employee.name AS Nombre_empleados, fact_employee.employee_satisfaction AS Satisfaccion
+FROM dim_employee
+JOIN fact_employee
+on dim_employee.employee_id = fact_employee.employee_id
+WHERE fact_employee.employee_satisfaction > 3
+ORDER BY fact_employee.employee_satisfaction DESC;
+
+-- 9 Promedio de edad según género
+SELECT dim_gender.gender AS Genero, AVG(dim_employee.age) AS Promedio_edad
+FROM dim_employee
+JOIN dim_gender
+ON dim_employee.id_gender = dim_gender.id_gender
+GROUP BY dim_gender.gender;
+
+-- 10 Cantidad de Empleados según titulo
+SELECT dim_job_title.job_title AS Titulo, COUNT(dim_employee.employee_id) AS Cantidad_empleados
+FROM dim_employee
+JOIN dim_job_title
+ON dim_employee.id_job_title = dim_job_title.id_job_title
+GROUP BY dim_job_title.job_title
+ORDER BY Cantidad_empleados DESC;
